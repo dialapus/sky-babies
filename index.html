@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffe6cb">
+  <meta name="description" content="Sky Babies: волшебный забег по облакам навстречу замку.">
+  <title>Sky Babies — Небесная малышка</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body data-state="start">
+  <main id="game-shell">
+    <canvas id="game-canvas" aria-label="Трёхмерный забег по небесной дороге"></canvas>
+    <div id="screen-vignette" aria-hidden="true"></div>
+
+    <header id="hud" aria-label="Игровые показатели">
+      <div class="game-identity">
+        <div class="identity-icon" aria-hidden="true">✦</div>
+        <div><span class="brand-name">SKY BABIES</span><span class="brand-caption">ДОРОГА К ЗАМКУ</span></div>
+      </div>
+      <div class="score-group">
+        <span id="score" class="score-chip">Счёт: 0</span>
+        <span id="best" class="best-chip">Рекорд: 0</span>
+      </div>
+      <button type="button" id="pause-button" class="pause-button" aria-label="Пауза" hidden>Ⅱ</button>
+    </header>
+
+    <div id="touch-hint" aria-hidden="true" hidden>
+      <span>← Свайп в сторону: дорожка →</span>
+      <span>↑ Свайп вверх или касание: прыжок</span>
+    </div>
+
+    <div id="overlay" class="overlay" aria-hidden="false">
+      <section class="overlay-card" role="dialog" aria-labelledby="overlay-title" aria-modal="false">
+        <div class="crown-mark" aria-hidden="true">✧ ✦ ✧</div>
+        <div id="overlay-eyebrow" class="overlay-eyebrow">ПРИКЛЮЧЕНИЕ НАД ОБЛАКАМИ</div>
+        <h1 id="overlay-title">Небесная малышка</h1>
+        <p id="overlay-subtitle">Беги к волшебному замку. Перепрыгивай облачные провалы и меняй дорожки!</p>
+        <div id="overlay-stats" class="overlay-stats" hidden>
+          <div><span class="stat-title">Ваш счёт</span><strong id="final-score">0</strong></div>
+          <div><span class="stat-title">Лучший</span><strong id="final-best">0</strong></div>
+        </div>
+        <button type="button" id="primary-button" class="play-button">Начать полёт</button>
+        <p id="overlay-help" class="overlay-help">← → / A D — дорожка · ↑ / пробел — прыжок · на телефоне — свайпы и касание</p>
+      </section>
+    </div>
+    <noscript>Для запуска Sky Babies включите JavaScript.</noscript>
+  </main>
+</body>
+</html>
