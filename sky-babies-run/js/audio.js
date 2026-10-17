@@ -1,22 +1,69 @@
-/** Short synthesized cues; no network audio, and no AudioContext before a user gesture. */
+/** Procedural stereo-friendly WebAudio cues. Fully offline; AudioContext starts only on gesture. */
 export class Sound {
-  constructor(enabled) { this.enabled = enabled; this.ctx = null; this.lastGift = 0; }
-  unlock() {
-    if (!this.enabled) return;
-    try { const C = window.AudioContext || window.webkitAudioContext; if (!C) return; if (!this.ctx) this.ctx = new C(); if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {}); } catch { /* Audio is optional. */ }
+  constructor(enabled){
+    this.enabled=!!enabled;this.ctx=null;this.master=null;this.lastGift=-1;
   }
-  tone(f, duration = .1, delay = 0, type = 'sine', gain = .06) {
-    const c = this.ctx; if (!this.enabled || !c || c.state !== 'running') return;
-    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + delay;
-    o.type = type; o.frequency.setValueAtTime(f,t); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(gain,t+.012); g.gain.exponentialRampToValueAtTime(.0001,t+duration);
-    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+duration+.03); o.onended = () => { o.disconnect(); g.disconnect(); };
+  unlock(){
+    if(!this.enabled)return;
+    try{
+      const Audio=window.AudioContext||window.webkitAudioContext;
+      if(!Audio)return;
+      if(!this.ctx){
+        this.ctx=new Audio();
+        const c=this.ctx, master=c.createGain(),comp=c.createDynamicsCompressor();
+        comp.threshold.value=-20;comp.knee.value=20;comp.ratio.value=4;
+        master.gain.value=.52;master.connect(comp);comp.connect(c.destination);
+        this.master=master;
+      }
+      if(this.ctx.state==='suspended')this.ctx.resume().catch(()=>{});
+    }catch {/* Audio is optional. */}
   }
-  play(type) {
-    if (type === 'gift') { const now = this.ctx?.currentTime || 0; if (now - this.lastGift < .08) return; this.lastGift = now; this.tone(880,.12); this.tone(1320,.15,.05); }
-    if (type === 'jump') { this.tone(440,.12); this.tone(660,.12,.06); }
-    if (type === 'slide') this.tone(220,.13,0,'triangle',.04);
-    if (type === 'bump') { this.tone(130,.22,0,'triangle',.11); this.tone(97,.25,.06,'triangle',.08); }
-    if (type === 'fall' || type === 'gameover') [392,330,262].forEach((f,i) => this.tone(f,.3,i*.12,'triangle'));
-    if (type === 'wings' || type === 'start') [523,659,784,1047].forEach((f,i) => this.tone(f,.25,i*.075,'sine',.055));
+  tone(f,duration=.12,delay=0,type='sine',gain=.075,endF=null){
+    const c=this.ctx;
+    if(!this.enabled||!c||c.state!=='running'||!this.master)return;
+    const t=c.currentTime+delay,osc=c.createOscillator(),env=c.createGain();
+    osc.type=type;osc.frequency.setValueAtTime(Math.max(20,f),t);
+    if(endF)osc.frequency.exponentialRampToValueAtTime(Math.max(20,endF),t+duration);
+    env.gain.setValueAtTime(.0001,t);
+    env.gain.exponentialRampToValueAtTime(Math.max(.001,gain),t+.012);
+    env.gain.exponentialRampToValueAtTime(.0001,t+duration);
+    osc.connect(env);env.connect(this.master);osc.start(t);osc.stop(t+duration+.03);
+    osc.onended=()=>{osc.disconnect();env.disconnect();};
+  }
+  play(type){
+    if(!this.enabled)return;
+    const c=this.ctx,now=c?.currentTime??-1;
+    if(type==='gift'){
+      if(now>=0&&now-this.lastGift<.085)return;
+      this.lastGift=now;
+      this.tone(740,.085,0,'sine',.042,930);
+      this.tone(1110,.14,.045,'sine',.052);
+      this.tone(1480,.18,.1,'sine',.032);
+    }else if(type==='start'){
+      [523,659,784,1047].forEach((f,i)=>this.tone(f,.20,i*.085,'sine',.038));
+    }else if(type==='jump'){
+      this.tone(380,.18,0,'triangle',.04,760);
+      this.tone(780,.11,.12,'sine',.025);
+    }else if(type==='slide'){
+      this.tone(360,.18,0,'triangle',.045,155);
+      this.tone(165,.12,.08,'sine',.023);
+    }else if(type==='lane'){
+      this.tone(480,.075,0,'sine',.012,570);
+    }else if(type==='bump'){
+      this.tone(220,.27,0,'triangle',.10,68);
+      this.tone(95,.19,.06,'sawtooth',.036,65);
+    }else if(type==='wings'){
+      [392,523,659,784,1047].forEach((f,i)=>this.tone(f,.26,i*.082,'sine',.04));
+      this.tone(1300,.55,.36,'sine',.02,1700);
+    }else if(type==='fall'){
+      this.tone(580,.62,0,'sine',.052,160);
+      this.tone(238,.52,.22,'triangle',.06,88);
+    }else if(type==='gameover'){
+      [392,330,294,220].forEach((f,i)=>this.tone(f,.25,i*.15,'triangle',.048));
+    }else if(type==='land'){
+      this.tone(360,.11,0,'sine',.033,270);
+    }else if(type==='pause'||type==='resume'){
+      this.tone(type==='pause'?360:520,.09,0,'sine',.022);
+    }
   }
 }

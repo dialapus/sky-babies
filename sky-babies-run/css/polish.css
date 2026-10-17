@@ -1,0 +1,76 @@
+/* Screen-only release polish — HUD lives in mobile.css. Offline and motion-safe. */
+.menu{
+  background:radial-gradient(ellipse 36% 38% at 78% 25%,#fffae343,transparent 100%),
+             linear-gradient(95deg,#fff0e8c9 0%,#fbe4ed95 44%,#f9d7e53a 74%,transparent 100%);
+}
+.menu-copy{filter:drop-shadow(0 13px 34px #a77b9f20)}
+.menu .eyebrow{background:#fff7edb0;border:1px solid #eacba4aa;border-radius:15px;
+  padding:8px 13px;display:inline-block;box-shadow:0 4px 15px #95677b13;}
+.intro-chips{display:flex;flex-wrap:wrap;gap:7px 8px;margin:-7px 0 18px;}
+.intro-chips span{display:inline-flex;align-items:center;padding:7px 12px;border-radius:100px;
+  font-size:10px;font-weight:800;background:#fff6eec9;color:#945a72;border:1px solid #eabecf;
+  box-shadow:0 4px 10px #7c527018;}
+.intro-chips span:before{content:'✦';font-size:9px;color:#d0a262;margin-right:5px;}
+.howto{margin:11px 0 0;width:min(410px,100%);border:1px solid #efc9d5;
+  background:#fff9efc9;color:#865d71;border-radius:16px;padding:0 13px;box-shadow:0 4px 15px #ad7d911e;}
+.howto summary{cursor:pointer;list-style:none;font-weight:900;font-size:12px;
+  min-height:36px;display:flex;align-items:center;justify-content:space-between;}
+.howto summary::-webkit-details-marker{display:none;}
+.howto summary span{font-size:16px;color:#b18b9f;transition:transform .2s;}
+.howto[open] summary span{transform:rotate(180deg);}
+.howto p{margin:0 0 12px;font-size:11px;line-height:1.55;}
+.menu-badge{backdrop-filter:blur(8px);background:#fff7e9ed;}
+.menu-badge:after{content:'✦';position:absolute;right:11px;top:-19px;color:#f3d68d;font-size:20px;text-shadow:1px 2px 0 #bd879a;}
+.panel{background:linear-gradient(145deg,#fffaf2,#fff2e9 66%,#f7e0f0);border-width:2px;}
+.panel h2{text-shadow:0 2px 0 #ffffffbd;}
+.panel .eyebrow{color:#b27a9c;}
+.panel .fine-print{color:#a08195!important;}
+#gameover[data-reason='caught'] .wing-emblem{background:linear-gradient(#c8d3ef,#a6b7df);border-color:#b5a6d5}
+#gameover[data-reason='caught'] .wing-emblem svg{color:#fff8e6;transform:none}
+.result-tip{padding:11px 15px;border:1px solid #eddfce;background:#fff9f1;border-radius:16px;
+  font-size:11px!important;color:#aa7a86!important;}
+.result-stats{border:1px solid #ebd6dc;border-radius:17px;padding:15px 8px;background:#ffffff75;}
+.result-stats div+div{border-left:1px solid #e9d2dc;}
+.record-row{background:#ffffff6b;margin:6px 0;border-radius:13px;padding:10px 13px;border:1px solid #efdee2;}
+.outfit{transition:transform .14s,border-color .15s,box-shadow .15s}
+.outfit:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 6px 15px #ad739a20;border-color:#d4a2c2;}
+.outfit.selected:after{content:'✓';width:19px;height:19px;position:absolute;margin:0 0 0 85px;
+  border-radius:50%;display:grid;place-items:center;color:#fff;background:#c6749a;}
+.button:focus-visible,.outfit:focus-visible,.howto summary:focus-visible{outline:3px solid #7054b6;outline-offset:3px;}
+@media(max-width:700px){
+  .menu{background:linear-gradient(#ffe7e3a6 0%,#f9d6e575 52%,#fff0e9d9 100%);}
+  .menu .eyebrow{padding:7px 11px;margin-bottom:9px;font-size:7px;}
+  .intro-chips{justify-content:center;gap:5px;margin:9px 0 0;}
+  .intro-chips span{font-size:8px;padding:5px 7px;}
+  .howto{margin:7px auto 0;max-width:380px;}
+  .howto summary{min-height:30px;font-size:10px;}
+  .howto p{font-size:10px;}
+  .result-tip{font-size:10px!important;padding:9px;}
+}
+@media(max-height:690px) and (max-width:700px){
+  .intro-chips{display:none;}
+  .howto{margin-top:5px;}
+  .howto summary{min-height:25px;}
+}
+@media(max-height:500px){
+  .intro-chips,.howto{display:none}
+}
+/* The entire result, including BOTH buttons, fits a 390px landscape phone. */
+@media(max-height:500px) and (orientation:landscape){
+  .overlay{padding:8px}
+  .result-panel{padding:9px 18px;max-height:calc(100dvh - 18px);border-radius:18px;width:min(440px,96vw)}
+  .result-panel .wing-emblem{display:none}
+  .result-panel .eyebrow{font-size:7px;letter-spacing:1px;margin:0 0 3px}
+  .result-panel h2{font-size:20px;margin:2px 0 5px;line-height:1}
+  .result-panel #result-reason{font-size:10px;margin:3px 0;line-height:1.3}
+  .result-panel .result-tip{display:block;font-size:8px!important;line-height:1.15;margin:3px 0;padding:4px 7px}
+  .result-panel .result-stats{padding:5px 0;margin:5px 0;gap:2px}
+  .result-panel .result-stats span{font-size:8px}
+  .result-panel .result-stats strong{font-size:17px;margin-top:1px}
+  .result-panel #new-record{font-size:9px!important;margin:2px 0}
+  .result-panel .primary{min-height:38px;padding:6px;font-size:17px;border-width:2px}
+  .result-panel .quiet{min-height:30px;margin-top:6px;padding:4px;font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .outfit,.howto summary span{transition:none;}
+}

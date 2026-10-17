@@ -1,12 +1,15 @@
 import { Runner, CFG } from './core.js';
 import { SaveStore, OUTFITS } from './storage.js';
 import { Sound } from './audio.js';
+import { resultPresentation, mobileOnboardingHint } from './result.js';
 
 const $=id=>document.getElementById(id), save=new SaveStore(), sound=new Sound(save.data.sound);
 const mode=new URLSearchParams(location.search).get('autotest')||'';
 const model=new Runner(mode), number=new Intl.NumberFormat('ru-RU');
 let stage, sheet='', committed=false, last=0, anim=0, hudClock=0, toastUntil=0, avgMs=16.7, qualityClock=0;
 let previousState='menu', isNewRecord=false, swipe=null;
+const touchInput=matchMedia('(pointer: coarse)').matches||navigator.maxTouchPoints>0||('ontouchstart' in window);
+document.documentElement.classList.toggle('touch-input',touchInput);
 
 function showError(message) { $('loading').hidden=true;$('error-message').textContent=message;$('error').hidden=false;document.body.dataset.state='error'; }
 function toast(message,seconds=2.3) { $('toast').textContent=message;$('toast').hidden=false;toastUntil=performance.now()+seconds*1000; }
@@ -54,7 +57,7 @@ function start(withAudio=true) {
   if(withAudio)sound.unlock();closeSheets();committed=false;isNewRecord=false;
   if(!mode)model.seed=Date.now();model.start();stage.clearObjects();
   $('menu').hidden=true;$('gameover').hidden=true;$('paused').hidden=true;$('hud').hidden=false;
-  $('hint').style.opacity='1';$('hint').textContent='Свайп вниз — подкат';$('toast').hidden=true;previousState='running';
+  $('hint').style.opacity='1';$('hint').textContent=touchInput?mobileOnboardingHint(0):'← → Дорожки · ↑ Прыжок · ↓ Подкат';$('toast').hidden=true;previousState='running';
   $('autotest-label').hidden=!['run','fall'].includes(mode);
   $('autotest-label').textContent=mode==='fall'?'АВТОТЕСТ · ПАДЕНИЕ':mode==='run'?'АВТОТЕСТ · БЕГ БЕЗ ПОРАЖЕНИЯ':'';
   updateHUD();document.activeElement?.blur();last=performance.now();document.body.dataset.state=model.state;
@@ -63,23 +66,34 @@ function pause() { if(model.state==='running'){model.pause();$('paused').hidden=
 function resume() { if(model.state==='paused'){sound.unlock();model.resume();$('paused').hidden=true;document.activeElement?.blur();last=performance.now();document.body.dataset.state='running';} }
 function gameover() {
   commitRun();$('paused').hidden=true;$('gameover').hidden=false;$('hint').style.opacity='0';
+  $('toast').hidden=true;toastUntil=0;
+  const result=resultPresentation(model.reason);
+  $('result-title').textContent=result.title;$('result-eyebrow').textContent=result.eyebrow;
+  $('result-icon').setAttribute('href',result.icon);
+  $('gameover').dataset.reason=result.kind;
   $('final-score').textContent=number.format(model.score);$('final-gifts').textContent=`+${number.format(model.gifts)}`;
-  $('final-best').textContent=number.format(Math.max(model.score,save.data.best));$('result-reason').textContent=model.reason;
+  $('final-best').textContent=number.format(Math.max(model.score,save.data.best));$('result-reason').textContent=model.reason;$('result-tip').textContent=result.tip;
   $('new-record').hidden=!isNewRecord;$('retry').focus({preventScroll:true});
 }
 function updateHUD() {
   $('score').textContent=number.format(model.score);$('gifts').textContent=number.format(model.gifts);$('speed').textContent=model.speed.toFixed(1).replace('.',',');
   $('wings-meter').hidden=model.wings<=0;$('wings-time').textContent=String(Math.ceil(model.wings));$('wings-fill').style.width=`${model.wings/CFG.wingsTime*100}%`;
   $('chase-fill').style.width=`${Math.min(100,model.danger*100)}%`;
-  $('chase-text').textContent=model.danger>.7?'Почтальон совсем рядом!':model.danger>.3?'Почтальон приближается':'Почтальон далеко';
-  if(model.time<5)$('hint').textContent=stage.mobile?'Свайп вниз — подкат':'← → Дорожки · ↑ Прыжок · ↓ Подкат';
-  else if(model.time<10)$('hint').textContent='Свайп вниз — подкат';
-  else if(model.time<15)$('hint').textContent='Трубы и дыры — перепрыгните!';
+  const postman=model.postmanDistance??12;
+  $('chase-text').textContent=postman<3.8?'Почтальон совсем рядом!':postman<8?'Почтальон приближается':'Почтальон далеко';
+  if(touchInput){
+    const hint=mobileOnboardingHint(model.time);
+    if(hint)$('hint').textContent=hint;
+    else $('hint').style.opacity='0';
+  } else if(model.time<4)$('hint').textContent='← → Дорожки · ↑ Прыжок · ↓ Подкат';
+  else if(model.time<8)$('hint').textContent='↑ Прыжок через трубы';
+  else if(model.time<12)$('hint').textContent='↓ Подкат под аркой';
+  else if(model.time<16)$('hint').textContent='Крылышки помогают летать';
   else $('hint').style.opacity='0';
 }
 function events() {
   for(const e of model.events) {
-    sound.play(e.type);
+    sound.play(e.type);stage?.handleEvent?.(e,model);
     if(e.type==='bump'){$('flash').classList.remove('active');void $('flash').offsetWidth;$('flash').classList.add('active');toast('Ой! Почтальон стал ближе');}
     if(e.type==='wings')toast('Крылышки! Выше всех препятствий',3);
     if(e.type==='land')toast('Крылышки исчезли — выбирайте дорожку');
@@ -92,11 +106,11 @@ function frame(now) {
   if(model.state!=='paused'&&model.state!=='gameover')anim+=dt;
   model.step(dt);events();
   if(previousState!==model.state){if(model.state==='gameover')gameover();previousState=model.state;document.body.dataset.state=model.state;}
-  if(!$('toast').hidden&&performance.now()>toastUntil)$('toast').hidden=true;
+  if(model.state==='gameover'||(!$('toast').hidden&&performance.now()>toastUntil))$('toast').hidden=true;
   hudClock+=dt;if(hudClock>.08){updateHUD();hudClock=0;}
   const isMenu=model.state==='menu';stage.update(model,anim,dt,isMenu);
   avgMs=avgMs*.98+Math.min(1000,raw*1000)*.02;qualityClock+=dt;
-  if(qualityClock>5){if(avgMs>26)stage.reduceQuality();qualityClock=0;}
+  if(qualityClock>2.5){if(avgMs>24)stage.reduceQuality();qualityClock=0;}
   requestAnimationFrame(frame);
 }
 function bind() {
@@ -115,15 +129,29 @@ function bind() {
     if(a&&model.state==='running'){e.preventDefault();if(!e.repeat){sound.unlock();model.input(a);}}
   });
   const canvas=stage.renderer.domElement;
-  canvas.addEventListener('pointerdown',e=>{if(model.state!=='running'||swipe||e.isPrimary===false)return;sound.unlock();swipe={id:e.pointerId,x:e.clientX,y:e.clientY};try{canvas.setPointerCapture(e.pointerId);}catch{}});
+  canvas.addEventListener('pointerdown',e=>{
+    if(model.state!=='running'||swipe||e.isPrimary===false)return;
+    sound.unlock();swipe={id:e.pointerId,x:e.clientX,y:e.clientY};
+    try{canvas.setPointerCapture(e.pointerId);}catch{}
+  },{passive:true});
   canvas.addEventListener('pointerup',e=>{
     if(!swipe||e.pointerId!==swipe.id)return;
     const dx=e.clientX-swipe.x,dy=e.clientY-swipe.y;swipe=null;
-    if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;
-    model.input(Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'slide':'jump');
-  });
+    if(Math.max(Math.abs(dx),Math.abs(dy))<28)return;
+    const action=Math.abs(dx)>Math.abs(dy)*1.1?(dx>0?'right':'left'):(dy>0?'slide':'jump');
+    sound.unlock();model.input(action);
+  },{passive:true});
   canvas.addEventListener('pointercancel',()=>swipe=null);
   canvas.addEventListener('lostpointercapture',()=>swipe=null);
+  document.querySelectorAll('#touch-controls button[data-action]').forEach(button=>{
+    const action=button.dataset.action;
+    button.addEventListener('pointerdown',e=>e.stopPropagation());
+    button.addEventListener('click',e=>{
+      e.preventDefault();e.stopPropagation();
+      if(model.state!=='running')return;
+      sound.unlock();model.input(action);
+    });
+  });
   canvas.addEventListener('contextmenu',e=>e.preventDefault());
   window.addEventListener('resize',()=>stage.resize());
   window.addEventListener('blur',()=>{swipe=null;pause();});
