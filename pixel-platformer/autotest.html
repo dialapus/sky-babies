@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#15243d">
+  <title>SKYLARK — browser autotest</title>
+  <style>
+    html,body{height:100%;margin:0;background:#15243d;color:#e4eee7;font:14px/1.5 ui-monospace,monospace}
+    main{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:12px;box-sizing:border-box}
+    #result{font-weight:700;padding:9px 16px;background:#26375c;border:1px solid #789db6;border-radius:5px;max-width:calc(100vw - 30px);overflow-wrap:anywhere}
+    #result.ok{background:#234e46;color:#d3f8df;border-color:#8fc7a5}
+    #result.bad{background:#602c3c;color:#ffe0df;border-color:#dfa1a8}
+    iframe{width:min(100%,1024px);height:min(75vh,650px);border:2px solid #789db6;border-radius:4px}
+    small{color:#acc1c3}
+  </style>
+</head>
+<body>
+  <main>
+    <div id="result" role="status" aria-live="polite">AUTOTEST RUNNING — simulating level 1...</div>
+    <iframe id="run" title="SKYLARK autotest" src="./index.html?autotest=1"></iframe>
+    <small>Same-origin browser E2E; reads window.__PLATFORMER__.result from the embedded game.</small>
+  </main>
+  <script>
+    const iframe = document.querySelector('#run');
+    const badge = document.querySelector('#result');
+    const start = performance.now();
+    const timer = setInterval(()=>{
+      try {
+        const test=iframe.contentWindow.__PLATFORMER__;
+        const result=test?.result;
+        if(result){
+          const ok=result.status==='passed';
+          badge.className=ok?'ok':'bad';
+          badge.textContent='AUTOTEST '+result.status.toUpperCase()+': '+result.detail+' / '+JSON.stringify(result.snapshot||{});
+          clearInterval(timer);
+        } else if(performance.now()-start>41000){
+          badge.className='bad';
+          badge.textContent='AUTOTEST FAILED: no result within 41 seconds';
+          clearInterval(timer);
+        }
+      } catch (error) {
+        badge.className='bad';
+        badge.textContent='AUTOTEST ERROR: '+error.message;
+        clearInterval(timer);
+      }
+    },200);
+  </script>
+</body>
+</html>
