@@ -3,6 +3,9 @@ import { WIDTH, HEIGHT, TILE, createLoop } from './engine.js';
 import { createInput } from './input.js';
 import { createGame } from './gameplay.js';
 import { createAudio } from './audio.js';
+import { computeViewport, applyViewport } from './layout.js';
+import { createLighting, selectQuality } from './lighting.js';
+import { createFx } from './fx.js';
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha:false });
@@ -19,6 +22,14 @@ const mainPalette = {
   rose:'#f19e83', shadow:'#151e36'
 };
 let gameClock=0, lastMode='', highScore=0, didAutotest=false;
+let view={width:WIDTH,height:HEIGHT,scale:1,cssWidth:WIDTH,cssHeight:HEIGHT};
+let lastRenderAt=0;
+const effects=createFx({seed:'skylark-lantern-trail'});
+// Effects use the main atlas; this callback never changes the drawing state.
+const lighting=createLighting({
+  drawAtlas:(target,name,x,y,w,h)=>drawAtlas(target,name,x,y,w,h),
+  quality:selectQuality(new URLSearchParams(location.search))
+});
 const autotest = new URLSearchParams(location.search).has('autotest');
 const debug = {result:null};
 
@@ -42,18 +53,24 @@ async function loadAssets() {
   [resources.atlas, resources.image, resources.title, resources.sky, resources.hills, resources.clouds] = list;
 }
 function sprite(name,x,y,flip=false,w,h) {
+  if (!flip) return drawAtlas(ctx,name,x,y,w,h);
   const source=resources.atlas?.frames?.[name]?.frame;
   const image=resources.image;
   if (!source || !image) return false;
   const dx=Math.round(x), dy=Math.round(y);
-  const dw=w||source.w, dh=h||source.h;
-  if(flip) {
-    ctx.save();
-    ctx.translate(dx+dw,0);
-    ctx.scale(-1,1);
-    ctx.drawImage(image,source.x,source.y,source.w,source.h,0,dy,dw,dh);
-    ctx.restore();
-  } else ctx.drawImage(image,source.x,source.y,source.w,source.h,dx,dy,dw,dh);
+  const dw=w??source.w, dh=h??source.h;
+  ctx.save();
+  ctx.translate(dx+dw,0);
+  ctx.scale(-1,1);
+  ctx.drawImage(image,source.x,source.y,source.w,source.h,0,dy,dw,dh);
+  ctx.restore();
+  return true;
+}
+function drawAtlas(target,name,x,y,w,h) {
+  const source=resources.atlas?.frames?.[name]?.frame;
+  if (!source || !resources.image || !target) return false;
+  target.drawImage(resources.image,source.x,source.y,source.w,source.h,
+    Math.round(x),Math.round(y),w??source.w,h??source.h);
   return true;
 }
 function fallback(x,y,w,h,color) {
@@ -67,20 +84,73 @@ function label(msg,x,y,{size=7,color=mainPalette.pale,align='left',shadow=true}=
   ctx.fillStyle=color;
   ctx.fillText(msg,x,y);
 }
-function background(camera=0) {
-  const grd=ctx.createLinearGradient(0,0,0,HEIGHT);
-  grd.addColorStop(0,'#213552');grd.addColorStop(.6,'#72678d');grd.addColorStop(1,'#b49b96');
-  ctx.fillStyle=grd;ctx.fillRect(0,0,WIDTH,HEIGHT);
-  if(resources.sky) ctx.drawImage(resources.sky,0,0);
+function background(camera=0,levelIndex=0) {
+  const width=view.width;
+  const themes=['#6c527d','#162e55','#10162d'];
+  ctx.fillStyle=themes[Math.min(2,Math.max(0,levelIndex))];
+  ctx.fillRect(0,0,width,view.height);
+  const atmos=['atmos_dusk','atmos_moon','atmos_cave'][Math.min(2,Math.max(0,levelIndex))];
+  const shift=Math.floor(camera*.08)%WIDTH;
+  let hasAtmos=false;
+  for(let x=-shift;x<width;x+=WIDTH) {
+    hasAtmos=drawAtlas(ctx,atmos,x,0,WIDTH,HEIGHT)||hasAtmos;
+  }
+  if(!hasAtmos && resources.sky) {
+    for(let x=0;x<width;x+=WIDTH)ctx.drawImage(resources.sky,x,0);
+  }
   function repeat(im,ratio) {
     if(!im)return;
     const shift=-Math.floor(camera*ratio)%WIDTH;
     const x=shift>0?shift-WIDTH:shift;
-    ctx.drawImage(im,x,0);
-    ctx.drawImage(im,x+WIDTH,0);
-    if(x<-WIDTH)ctx.drawImage(im,x+WIDTH*2,0);
+    for(let at=x;at<width;at+=WIDTH)ctx.drawImage(im,at,0);
   }
-  repeat(resources.clouds,.1);repeat(resources.hills,.26);
+  ctx.save();
+  ctx.globalAlpha=hasAtmos?.68:1;
+  repeat(resources.clouds,.1);
+  repeat(resources.hills,.26);
+  ctx.restore();
+  // Portrait devices reveal additional UNDERGROUND, never collision geometry.
+  if(view.height>HEIGHT) {
+    ctx.fillStyle='#111a32';ctx.fillRect(0,HEIGHT,width,view.height-HEIGHT);
+    const underShift=Math.floor(camera*.12)%WIDTH;
+    for(let y=HEIGHT;y<view.height;y+=HEIGHT) {
+      for(let x=-underShift;x<width;x+=WIDTH) {
+        drawAtlas(ctx,'atmos_underworld',x,y,WIDTH,HEIGHT);
+      }
+    }
+    // World-anchored strata/pillars retain hand-pixeled terrain beneath row 8.
+    for(let y=HEIGHT+28;y<view.height;y+=48) {
+      ctx.fillStyle=(Math.floor(y/48)%2===0)?'#33405b':'#243653';
+      ctx.fillRect(0,y,width,2);
+      ctx.fillStyle='#506078';ctx.fillRect(0,y,width,1);
+    }
+    const pillarScroll=Math.floor(camera*.35);
+    const from=Math.floor((pillarScroll-32)/80);
+    const to=Math.ceil((pillarScroll+width+32)/80);
+    for(let i=from;i<=to;i++) {
+      const x=i*80-pillarScroll;
+      ctx.fillStyle='#16213c';ctx.fillRect(x,HEIGHT+15,7,view.height-HEIGHT);
+      ctx.fillStyle='#46526e';ctx.fillRect(x,HEIGHT+15,2,view.height-HEIGHT);
+    }
+  }
+}
+function resizeViewport() {
+  const stage=canvas.parentElement;
+  const stageRect=stage?.getBoundingClientRect();
+  const canvasRect=canvas.getBoundingClientRect();
+  const touch=window.matchMedia?.('(pointer: coarse)')?.matches ||
+    navigator.maxTouchPoints>0;
+  const cssWidth=Math.max(1,Math.round((touch?innerWidth:stageRect?.width)||canvasRect.width||WIDTH));
+  const cssHeight=Math.max(1,Math.round(touch
+    ? (innerHeight||stageRect?.height||canvasRect.height||HEIGHT)
+    : cssWidth*HEIGHT/WIDTH));
+  const next=computeViewport(cssWidth,cssHeight,window.devicePixelRatio||1,{touch});
+  if(view.width!==next.width || view.height!==next.height ||
+    view.cssWidth!==next.cssWidth || view.cssHeight!==next.cssHeight) {
+    view=next;
+    applyViewport(canvas,view);
+  }
+  ctx.imageSmoothingEnabled=false;
 }
 function rowArray(level) {
   if (Array.isArray(level?.rows))return level.rows;
@@ -90,7 +160,7 @@ function rowArray(level) {
 function drawTiles(state,camera) {
   const rows=rowArray(state.level);
   const startCol=Math.max(0,Math.floor(camera/TILE));
-  const endCol=startCol+Math.ceil(WIDTH/TILE)+2;
+  const endCol=startCol+Math.ceil(view.width/TILE)+2;
   for (let y=0;y<rows.length;y++) {
     const row=rows[y]||'';
     for (let x=startCol;x<Math.min(row.length,endCol);x++){
@@ -116,7 +186,7 @@ function drawTiles(state,camera) {
     for(const coin of state.pickups) {
       if(coin.collected||coin.taken||coin.active===false)continue;
       const sx=(coin.x??0)-camera, sy=coin.y??0;
-      if(sx>-20&&sx<WIDTH+20&&!sprite('tile_coin_'+(Math.floor(gameClock*8)%4),sx,sy))
+      if(sx>-20&&sx<view.width+20&&!sprite('tile_coin_'+(Math.floor(gameClock*8)%4),sx,sy))
         if(!sprite('tile_coin_0',sx,sy))fallback(sx+3,sy+3,8,8,mainPalette.gold);
     }
   } else {
@@ -141,7 +211,7 @@ function drawEnemies(state,camera) {
   for(const e of (state.enemies||[])) {
     if(e.alive===false && !e.flattened && !e.squashed && !(e.deadTimer>0))continue;
     const x=Math.round(e.x-camera),y=Math.round(e.y);
-    if(x<-24||x>WIDTH+16)continue;
+    if(x<-24||x>view.width+16)continue;
     const type=(e.type||'beetle').replace(/^enemy_/,'').replace(/_walk$/,'');
     const squashed=e.flattened||e.squashed||e.alive===false;
     const frame=Math.floor(gameClock*8)%4;
@@ -162,27 +232,67 @@ function drawPlayer(state,camera) {
   if(!sprite(id,x,y,p.vx<-1))
     if(!sprite('hero_idle',x,y,p.vx<-1))fallback(x,y,16,24,mainPalette.moss);
 }
+// Deterministic decorative landmarks; no lantern is added to collision/game state.
+function drawLanterns(state,camera) {
+  const lamps=[];
+  const width=(rowArray(state.level)[0]?.length||16)*TILE;
+  const first=Math.max(0,Math.floor((camera-72-64)/144));
+  const last=Math.min(Math.ceil(width/144),Math.ceil((camera+view.width+64-72)/144));
+  const level=state.levelIndex||0;
+  for(let i=first;i<=last;i++) {
+    const worldX=72+i*144;
+    if(worldX>=width-20)continue;
+    const hanging=level>0 && i%3===1;
+    const color=(level===2 && i%3===2)?'cool':'warm';
+    const emitterY=hanging?16:88;
+    const screenX=Math.round(worldX-camera);
+    if(hanging) {
+      if(!sprite('lantern_hanging',screenX-8,0,false,16,24)) {
+        fallback(screenX-1,0,2,9,'#425575');
+        fallback(screenX-5,9,10,12,'#f2c788');
+      }
+    } else if(!sprite('lantern_post',screenX-8,80,false,16,32)) {
+      fallback(screenX-1,92,2,20,'#415775');
+      fallback(screenX-5,82,10,11,'#f1cc90');
+    }
+    const flameId='lantern_flame_'+(Math.floor(gameClock*8)%4);
+    const flameX=screenX-4, flameY=emitterY-5;
+    if(!sprite(flameId,flameX,flameY,false,8,8)) {
+      sprite('lantern_flame_0',flameX,flameY,false,8,8);
+    }
+    lamps.push({x:worldX,y:emitterY,kind:hanging?'hanging':'post',color});
+  }
+  return lamps;
+}
+function levelFlag(rows) {
+  for(let y=0;y<rows.length;y++) {
+    const x=(rows[y]||'').indexOf('F');
+    if(x!==-1)return {x:x*TILE,y:y*TILE};
+  }
+  return null;
+}
 function drawHUD(state) {
-  fallback(0,0,WIDTH,15,'#172a44');
-  ctx.fillStyle='#3a5b6a';ctx.fillRect(0,14,WIDTH,1);
+  fallback(0,0,view.width,15,'#172a44');
+  ctx.fillStyle='#3a5b6a';ctx.fillRect(0,14,view.width,1);
   sprite('ui_heart',5,3)||fallback(5,4,8,7,mainPalette.rose);
   label('x'+Math.max(0,state.lives??3),18,4,{size:7});
   sprite('ui_coin',50,3)||fallback(50,4,8,8,mainPalette.gold);
   label('x'+(state.coins||0).toString().padStart(2,'0'),62,4,{size:7});
   sprite('ui_clock',104,3)||fallback(105,4,8,8,mainPalette.gold);
   label(String(Math.ceil(state.time??180)).padStart(3,'0'),116,4,{size:7});
-  label('ZONE '+((state.levelIndex||0)+1),WIDTH-7,4,{size:7,align:'right',color:'#f8db9a'});
+  label('ZONE '+((state.levelIndex||0)+1),view.width-7,4,{size:7,align:'right',color:'#f8db9a'});
 }
-function dimmer(alpha=.7) {ctx.fillStyle='rgba(11,20,35,'+alpha+')';ctx.fillRect(0,0,WIDTH,HEIGHT)}
+function dimmer(alpha=.7) {ctx.fillStyle='rgba(11,20,35,'+alpha+')';ctx.fillRect(0,0,view.width,view.height)}
 function menu(state) {
   if(state.mode==='playing')return;
+  const cx=Math.round(view.width/2);
   if(state.mode==='title') {
-    if(resources.title) ctx.drawImage(resources.title,0,0,WIDTH,HEIGHT);
+    if(resources.title) ctx.drawImage(resources.title,cx-WIDTH/2,0,WIDTH,HEIGHT);
     else {
       dimmer(.48);
-      sprite('ui_logo',40,19)||label('SKYLARK',128,29,{size:20,align:'center',color:mainPalette.gold});
-      label('THE LANTERN TRAIL',128,62,{align:'center',size:9});
-      label('JUMP / TAP TO START',128,123,{align:'center',size:8,color:mainPalette.gold});
+      sprite('ui_logo',cx-88,19)||label('SKYLARK',cx,29,{size:20,align:'center',color:mainPalette.gold});
+      label('THE LANTERN TRAIL',cx,62,{align:'center',size:9});
+      label('JUMP / TAP TO START',cx,123,{align:'center',size:8,color:mainPalette.gold});
     }
     return;
   }
@@ -190,23 +300,40 @@ function menu(state) {
   const isWon=state.mode==='won';
   const title=state.mode==='paused'?'PAUSED':isWon?'TRAIL COMPLETE!':'NO LIVES LEFT';
   const sub=state.mode==='paused'?'P / ESC TO RESUME':isWon?'THE LANTERNS ARE LIT':'TRY THE TRAIL AGAIN';
-  label(title,128,43,{size:state.mode==='paused'?16:13,align:'center',color:mainPalette.gold});
-  label(sub,128,73,{size:8,align:'center'});
-  label('JUMP / TAP TO '+(state.mode==='paused'?'CONTINUE':'RESTART'),128,104,{size:8,align:'center',color:mainPalette.rose});
-  if(isWon)label('SCORE '+(state.score||0),128,90,{size:8,align:'center'});
+  label(title,cx,43,{size:state.mode==='paused'?16:13,align:'center',color:mainPalette.gold});
+  label(sub,cx,73,{size:8,align:'center'});
+  label('JUMP / TAP TO '+(state.mode==='paused'?'CONTINUE':'RESTART'),cx,104,{size:8,align:'center',color:mainPalette.rose});
+  if(isWon)label('SCORE '+(state.score||0),cx,90,{size:8,align:'center'});
 }
 function render() {
   ctx.imageSmoothingEnabled=false;
+  const now=performance.now();
+  if(lastRenderAt)lighting.noteFrame(now-lastRenderAt);
+  lastRenderAt=now;
   const state=game.state||{};
   const rows=rowArray(state.level);
-  const maxX=Math.max(0,(rows[0]?.length||16)*16-WIDTH);
-  const desired=(state.player?.x||0)-WIDTH*.35;
-  const camera=Math.max(0,Math.min(maxX,state.cameraX??desired));
-  background(camera);
+  const maxX=Math.max(0,(rows[0]?.length||16)*TILE-view.width);
+  const desired=(state.player?.x||0)-view.width*.36;
+  // Physics retains state.cameraX based on the legacy 256px world.
+  // The wider/portrait viewport derives a read-only cosmetic camera.
+  const camera=Math.round(Math.max(0,Math.min(maxX,
+    view.width===WIDTH?(state.cameraX??desired):desired)));
+  background(camera,state.levelIndex||0);
   if(state.level) {
+    const scene={width:view.width,height:view.height,camera,
+      levelIndex:state.levelIndex||0,clock:gameClock,quality:lighting.quality,
+      drawAtlas};
+    effects.drawBack(ctx,scene);
     drawTiles(state,camera);
+    const lamps=drawLanterns(state,camera);
     drawEnemies(state,camera);
     drawPlayer(state,camera);
+    const coins=state.pickups||[];
+    const flag=levelFlag(rows);
+    lighting.render(ctx,{width:view.width,height:view.height,
+      levelIndex:state.levelIndex||0,camera,hero:state.player,
+      lamps,coins,flag,clock:gameClock});
+    effects.drawFront(ctx,{...scene,quality:lighting.quality,coins,flag});
   }
   if(state.mode!=='title')drawHUD(state);
   menu(state);
@@ -231,6 +358,10 @@ Object.defineProperty(window,'__PLATFORMER__',{configurable:false,writable:false
   snapshot,
   get result(){return debug.result},
   get ready(){return !!resources.atlas},
+  lighting:Object.freeze({
+    get quality(){return lighting.quality},
+    get fps(){return lighting.fps}
+  })
 })});
 function autopilotInput() {
   const s=game.state,p=s.player||{};
@@ -293,7 +424,10 @@ document.querySelector('#jump')?.addEventListener('click',()=>{
   else if(['won','gameover'].includes(game.state.mode))game.restart();
 });
 await loadAssets();
+resizeViewport();
 render();
-// Keep internal logical resolution 256x144, letterbox by CSS: crisp sprite pixels.
+// Responsive *render* bounds do not change the 256x144 fixed-step physics.
+window.addEventListener('resize',resizeViewport,{passive:true});
+window.addEventListener('orientationchange',resizeViewport,{passive:true});
 const loop=createLoop({update:(dt)=>update(controls.read(),dt),render});
 loop.start();

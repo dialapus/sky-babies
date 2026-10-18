@@ -146,8 +146,8 @@
   },
   "enemy_beetle_walk_0": {
    "frame": {
-    "x": 0,
-    "y": 25,
+    "x": 119,
+    "y": 0,
     "w": 16,
     "h": 16
    },
@@ -167,7 +167,7 @@
   },
   "enemy_beetle_walk_1": {
    "frame": {
-    "x": 17,
+    "x": 0,
     "y": 25,
     "w": 16,
     "h": 16
@@ -188,7 +188,7 @@
   },
   "enemy_beetle_walk_2": {
    "frame": {
-    "x": 34,
+    "x": 17,
     "y": 25,
     "w": 16,
     "h": 16
@@ -209,7 +209,7 @@
   },
   "enemy_beetle_walk_3": {
    "frame": {
-    "x": 51,
+    "x": 34,
     "y": 25,
     "w": 16,
     "h": 16
@@ -230,7 +230,7 @@
   },
   "enemy_beetle_flat": {
    "frame": {
-    "x": 68,
+    "x": 51,
     "y": 25,
     "w": 16,
     "h": 16
@@ -250,7 +250,7 @@
   },
   "enemy_moth_walk_0": {
    "frame": {
-    "x": 85,
+    "x": 68,
     "y": 25,
     "w": 16,
     "h": 16
@@ -271,7 +271,7 @@
   },
   "enemy_moth_walk_1": {
    "frame": {
-    "x": 102,
+    "x": 85,
     "y": 25,
     "w": 16,
     "h": 16
@@ -292,8 +292,8 @@
   },
   "enemy_moth_walk_2": {
    "frame": {
-    "x": 0,
-    "y": 42,
+    "x": 102,
+    "y": 25,
     "w": 16,
     "h": 16
    },
@@ -313,8 +313,8 @@
   },
   "enemy_moth_walk_3": {
    "frame": {
-    "x": 17,
-    "y": 42,
+    "x": 119,
+    "y": 25,
     "w": 16,
     "h": 16
    },
@@ -334,7 +334,7 @@
   },
   "enemy_moth_flat": {
    "frame": {
-    "x": 34,
+    "x": 0,
     "y": 42,
     "w": 16,
     "h": 16
@@ -354,7 +354,7 @@
   },
   "enemy_roller_walk_0": {
    "frame": {
-    "x": 51,
+    "x": 17,
     "y": 42,
     "w": 16,
     "h": 16
@@ -375,7 +375,7 @@
   },
   "enemy_roller_walk_1": {
    "frame": {
-    "x": 68,
+    "x": 34,
     "y": 42,
     "w": 16,
     "h": 16
@@ -396,7 +396,7 @@
   },
   "enemy_roller_walk_2": {
    "frame": {
-    "x": 85,
+    "x": 51,
     "y": 42,
     "w": 16,
     "h": 16
@@ -417,7 +417,7 @@
   },
   "enemy_roller_walk_3": {
    "frame": {
-    "x": 102,
+    "x": 68,
     "y": 42,
     "w": 16,
     "h": 16
@@ -438,8 +438,8 @@
   },
   "enemy_roller_flat": {
    "frame": {
-    "x": 0,
-    "y": 59,
+    "x": 85,
+    "y": 42,
     "w": 16,
     "h": 16
    },
@@ -458,8 +458,8 @@
   },
   "tile_ground": {
    "frame": {
-    "x": 17,
-    "y": 59,
+    "x": 102,
+    "y": 42,
     "w": 16,
     "h": 16
    },
@@ -478,8 +478,8 @@
   },
   "tile_brick": {
    "frame": {
-    "x": 34,
-    "y": 59,
+    "x": 119,
+    "y": 42,
     "w": 16,
     "h": 16
    },
@@ -498,7 +498,7 @@
   },
   "tile_block_full": {
    "frame": {
-    "x": 51,
+    "x": 0,
     "y": 59,
     "w": 16,
     "h": 16
@@ -518,7 +518,7 @@
   },
   "tile_block_empty": {
    "frame": {
-    "x": 68,
+    "x": 17,
     "y": 59,
     "w": 16,
     "h": 16
@@ -538,7 +538,7 @@
   },
   "tile_platform": {
    "frame": {
-    "x": 85,
+    "x": 34,
     "y": 59,
     "w": 16,
     "h": 16
@@ -558,7 +558,7 @@
   },
   "tile_decor": {
    "frame": {
-    "x": 102,
+    "x": 51,
     "y": 59,
     "w": 16,
     "h": 16
@@ -578,8 +578,8 @@
   },
   "tile_spike": {
    "frame": {
-    "x": 0,
-    "y": 76,
+    "x": 68,
+    "y": 59,
     "w": 16,
     "h": 16
    },
@@ -598,8 +598,8 @@
   },
   "tile_coin_0": {
    "frame": {
-    "x": 17,
-    "y": 76,
+    "x": 85,
+    "y": 59,
     "w": 12,
     "h": 12
    },
@@ -619,8 +619,8 @@
   },
   "tile_coin_1": {
    "frame": {
-    "x": 30,
-    "y": 76,
+    "x": 98,
+    "y": 59,
     "w": 12,
     "h": 12
    },
@@ -640,8 +640,8 @@
   },
   "tile_coin_2": {
    "frame": {
-    "x": 43,
-    "y": 76,
+    "x": 111,
+    "y": 59,
     "w": 12,
     "h": 12
    },
@@ -661,7 +661,7 @@
   },
   "tile_coin_3": {
    "frame": {
-    "x": 56,
+    "x": 0,
     "y": 76,
     "w": 12,
     "h": 12
@@ -682,7 +682,7 @@
   },
   "tile_finish": {
    "frame": {
-    "x": 69,
+    "x": 13,
     "y": 76,
     "w": 16,
     "h": 48
@@ -702,7 +702,7 @@
   },
   "ui_logo": {
    "frame": {
-    "x": 86,
+    "x": 30,
     "y": 76,
     "w": 176,
     "h": 26
@@ -722,8 +722,8 @@
   },
   "ui_coin": {
    "frame": {
-    "x": 0,
-    "y": 125,
+    "x": 207,
+    "y": 76,
     "w": 10,
     "h": 10
    },
@@ -742,8 +742,8 @@
   },
   "ui_heart": {
    "frame": {
-    "x": 11,
-    "y": 125,
+    "x": 218,
+    "y": 76,
     "w": 10,
     "h": 10
    },
@@ -762,8 +762,8 @@
   },
   "ui_clock": {
    "frame": {
-    "x": 22,
-    "y": 125,
+    "x": 229,
+    "y": 76,
     "w": 10,
     "h": 10
    },
@@ -782,8 +782,8 @@
   },
   "ui_banner": {
    "frame": {
-    "x": 33,
-    "y": 125,
+    "x": 240,
+    "y": 76,
     "w": 96,
     "h": 16
    },
@@ -799,6 +799,370 @@
     "w": 96,
     "h": 16
    }
+  },
+  "lantern_post": {
+   "frame": {
+    "x": 337,
+    "y": 76,
+    "w": 16,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 32
+   }
+  },
+  "lantern_hanging": {
+   "frame": {
+    "x": 0,
+    "y": 125,
+    "w": 16,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 16,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 16,
+    "h": 24
+   }
+  },
+  "lantern_flame_0": {
+   "frame": {
+    "x": 17,
+    "y": 125,
+    "w": 8,
+    "h": 8
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 8,
+    "h": 8
+   },
+   "sourceSize": {
+    "w": 8,
+    "h": 8
+   },
+   "duration": 143
+  },
+  "lantern_flame_1": {
+   "frame": {
+    "x": 26,
+    "y": 125,
+    "w": 8,
+    "h": 8
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 8,
+    "h": 8
+   },
+   "sourceSize": {
+    "w": 8,
+    "h": 8
+   },
+   "duration": 143
+  },
+  "lantern_flame_2": {
+   "frame": {
+    "x": 35,
+    "y": 125,
+    "w": 8,
+    "h": 8
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 8,
+    "h": 8
+   },
+   "sourceSize": {
+    "w": 8,
+    "h": 8
+   },
+   "duration": 143
+  },
+  "lantern_flame_3": {
+   "frame": {
+    "x": 44,
+    "y": 125,
+    "w": 8,
+    "h": 8
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 8,
+    "h": 8
+   },
+   "sourceSize": {
+    "w": 8,
+    "h": 8
+   },
+   "duration": 143
+  },
+  "lantern_glow_warm": {
+   "frame": {
+    "x": 53,
+    "y": 125,
+    "w": 48,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 48,
+    "h": 48
+   }
+  },
+  "lantern_glow_cool": {
+   "frame": {
+    "x": 102,
+    "y": 125,
+    "w": 48,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 48,
+    "h": 48
+   }
+  },
+  "aura_hero": {
+   "frame": {
+    "x": 151,
+    "y": 125,
+    "w": 48,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 48,
+    "h": 48
+   }
+  },
+  "aura_coin": {
+   "frame": {
+    "x": 0,
+    "y": 174,
+    "w": 32,
+    "h": 32
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 32,
+    "h": 32
+   },
+   "sourceSize": {
+    "w": 32,
+    "h": 32
+   }
+  },
+  "aura_flag": {
+   "frame": {
+    "x": 33,
+    "y": 174,
+    "w": 48,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 48,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 48,
+    "h": 48
+   }
+  },
+  "aura_firefly": {
+   "frame": {
+    "x": 82,
+    "y": 174,
+    "w": 8,
+    "h": 8
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 8,
+    "h": 8
+   },
+   "sourceSize": {
+    "w": 8,
+    "h": 8
+   }
+  },
+  "atmos_dusk": {
+   "frame": {
+    "x": 91,
+    "y": 174,
+    "w": 256,
+    "h": 144
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 256,
+    "h": 144
+   },
+   "sourceSize": {
+    "w": 256,
+    "h": 144
+   }
+  },
+  "atmos_moon": {
+   "frame": {
+    "x": 348,
+    "y": 174,
+    "w": 256,
+    "h": 144
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 256,
+    "h": 144
+   },
+   "sourceSize": {
+    "w": 256,
+    "h": 144
+   }
+  },
+  "atmos_cave": {
+   "frame": {
+    "x": 605,
+    "y": 174,
+    "w": 256,
+    "h": 144
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 256,
+    "h": 144
+   },
+   "sourceSize": {
+    "w": 256,
+    "h": 144
+   }
+  },
+  "atmos_underworld": {
+   "frame": {
+    "x": 862,
+    "y": 174,
+    "w": 256,
+    "h": 144
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 256,
+    "h": 144
+   },
+   "sourceSize": {
+    "w": 256,
+    "h": 144
+   }
+  },
+  "atmos_ray": {
+   "frame": {
+    "x": 1119,
+    "y": 174,
+    "w": 48,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 48,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 48,
+    "h": 80
+   }
+  },
+  "atmos_mist": {
+   "frame": {
+    "x": 0,
+    "y": 319,
+    "w": 96,
+    "h": 24
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 96,
+    "h": 24
+   },
+   "sourceSize": {
+    "w": 96,
+    "h": 24
+   }
   }
  },
  "meta": {
@@ -806,8 +1170,8 @@
   "image": "atlas.png",
   "format": "RGBA8888",
   "size": {
-   "w": 262,
-   "h": 141
+   "w": 1167,
+   "h": 343
   },
   "scale": "1",
   "frameTags": [
@@ -839,6 +1203,12 @@
     "name": "tile_coin",
     "from": 29,
     "to": 32,
+    "direction": "forward"
+   },
+   {
+    "name": "lantern_flame",
+    "from": 41,
+    "to": 44,
     "direction": "forward"
    }
   ]
